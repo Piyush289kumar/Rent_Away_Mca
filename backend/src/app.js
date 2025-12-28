@@ -40,6 +40,7 @@ import uploadRoutes from "./routes/upload.routes.js";
 // Rent Away
 import propertyRoutes from "./routes/property.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
+import bookingExtensionRoutes from "./routes/bookingExtension.routes.js";
 
 // ===============================================
 // 🧠 Environment Config
@@ -158,6 +159,7 @@ app.use(`${routePrefix}/upload`, uploadRoutes);
 // Rent Away
 app.use(`${routePrefix}/property`, propertyRoutes);
 app.use(`${routePrefix}/booking`, bookingRoutes);
+app.use(`${routePrefix}/booking-extension`, bookingExtensionRoutes);
 
 // ===============================================
 // 🩵 Health Check
