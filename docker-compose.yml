@@ -1,0 +1,83 @@
+# media_gallery_app/docker-compose.yml
+
+# version: "3.9"
+services:
+  mongodb:
+    container_name: app-mongodb
+    image: mongo:7
+    restart: unless-stopped
+    command: >
+      mongod
+      --wiredTigerCacheSizeGB 0.5
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  backend:
+    container_name: app-backend
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_OPTIONS: --max-old-space-size=768
+      MONGO_URI: mongodb://mongodb:27017/belleza
+    depends_on:
+      - mongodb
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  admin:
+    container_name: app-admin
+    build:
+      context: ./admin_console
+    restart: unless-stopped
+    environment:
+      NODE_OPTIONS: --max-old-space-size=768
+    depends_on:
+      - backend
+    ports:
+      - "5173:3000"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  website:
+    container_name: frontend
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      NODE_OPTIONS: --max-old-space-size=768
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+networks:
+  belleza-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
