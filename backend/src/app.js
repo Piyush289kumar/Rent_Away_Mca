@@ -37,6 +37,10 @@ import policyRoutes from "./routes/policy.routes.js";
 import contatUsRoutes from "./routes/contactus.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 
+// Rent Away
+import propertyRoutes from "./routes/property.routes.js";
+import bookingRoutes from "./routes/booking.routes.js";
+
 // ===============================================
 // 🧠 Environment Config
 // ===============================================
@@ -150,6 +154,10 @@ app.use(`${routePrefix}/service`, serviceRoutes);
 app.use(`${routePrefix}/policy`, policyRoutes);
 app.use(`${routePrefix}/contact`, contatUsRoutes);
 app.use(`${routePrefix}/upload`, uploadRoutes);
+
+// Rent Away
+app.use(`${routePrefix}/property`, propertyRoutes);
+app.use(`${routePrefix}/booking`, bookingRoutes);
 
 // ===============================================
 // 🩵 Health Check
