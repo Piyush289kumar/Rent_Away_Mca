@@ -6,6 +6,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: ["admin", "customer"],
+      required: true,
+      default: "customer",
+    },
     email: {
       type: String,
       required: true,
@@ -30,7 +36,7 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 const User = mongoose.model("User", userSchema);

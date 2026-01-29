@@ -1,4 +1,83 @@
-### Get Profile (Protected)
-GET {{baseUrl}}/users/profile/view
+// src/tests/rest-client-api-test/users-api.http
+
+@baseUrl = http://localhost:8000/api/v1
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2IzNjY2MzllODQ5OWNmM2JlNTMwMSIsImVtYWlsIjoia2FzaGlzaG1haG9iaXlhQGdtYWlsLmNvbSIsImlhdCI6MTc2OTY4MjU1OCwiZXhwIjoxNzcwMjg3MzU4fQ.6qfTkpvIPA1O5la6qUrpMhxFuI5JfbNWz-G3CUTZstg
+@userId = 697b358539e8499cf3be52e5
+
+### ===============================
+### 🟢 PUBLIC — Get Public User Profile
+### ===============================
+GET {{baseUrl}}/users/{{userId}}
+Accept: application/json
+
+###
+
+### ===============================
+### 🔒 ADMIN — Get All Users
+### ===============================
+GET {{baseUrl}}/users/admin/all?page=1&limit=10&search=
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### ===============================
+### 🔒 ADMIN — Get User By ID
+### ===============================
+GET {{baseUrl}}/users/admin/{{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### ===============================
+### 🔒 ADMIN — Create User
+### ===============================
+POST {{baseUrl}}/users/admin
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Admin",
+  "email": "testadmin@gmail.com",
+  "password": "admin@123",
+  "role": "admin"
+}
+
+###
+
+### ===============================
+### 🔒 ADMIN — Full Update User (PUT)
+### ===============================
+PUT {{baseUrl}}/users/admin/{{userId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated User Name",
+  "email": "updatedemail@gmail.com",
+  "password": "newpassword@123",
+  "role": "customer"
+}
+
+###
+
+### ===============================
+### 🔒 ADMIN — Partial Update User (PATCH)
+### ===============================
+PATCH {{baseUrl}}/users/admin/{{userId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Partially Updated Name"
+}
+
+###
+
+### ===============================
+### 🔒 ADMIN — Delete User
+### ===============================
+DELETE {{baseUrl}}/users/admin/{{userId}}
 Authorization: Bearer {{token}}
 Accept: application/json

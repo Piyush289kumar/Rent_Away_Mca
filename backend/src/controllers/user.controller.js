@@ -1,96 +1,205 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import {
-  destroyFromCloudinary,
   uploadToCloudinary,
+  destroyFromCloudinary,
 } from "../utils/cloudinaryService.js";
 
-// Get Logged-in User's to these Profile
-export const getProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password").lean();
-    res.status(200).json({ message: "Profile fetch successfully", user });
-  } catch (error) {
-    console.error("Error feching profile: ", error.message);
+/* ============================
+   🟢 PUBLIC CONTROLLER
+============================ */
 
-    return res
-      .status(500)
-      .json({ message: "Error feching profile.", error: error.message });
+export const getPublicUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select("name avatar role createdAt")
+      .lean();
+
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    res.json({ success: true, data: user });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-// ✅ Update Logged-in User's Profile
-export const updateProfileById = async (req, res) => {
+/* ============================
+   🔒 ADMIN CONTROLLERS
+============================ */
+
+/* GET ALL USERS */
+export const getAllUsers = async (req, res) => {
   try {
-    // ✅ Use ID from token (set by ensureAuth middleware)
-    const userId = req.user?.id;
-    const { name, email, password } = req.body || {};
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      role,
+    } = req.query;
 
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized. Please login again." });
+    const query = {};
+
+    if (role) query.role = role;
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
+    const total = await User.countDocuments(query);
+
+    const users = await User.find(query)
+      .select("-password")
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      data: users,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/* GET USER BY ID */
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password").lean();
+
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    res.json({ success: true, data: user });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/* CREATE USER */
+export const createUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password)
+      return res.status(400).json({ message: "Missing required fields" });
+
+    if (await User.findOne({ email }))
+      return res.status(400).json({ message: "Email already exists" });
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    let avatar = null;
+    if (req.files?.avatar?.[0]) {
+      const up = await uploadToCloudinary(
+        req.files.avatar[0].path,
+        "users/avatar"
+      );
+      avatar = up.secure_url;
     }
 
-    let updatedFields = {};
-    let avatarUrl = null;
+    const user = await User.create({
+      name,
+      email,
+      password: hashed,
+      role: role || "customer",
+      avatar,
+    });
 
-    // ✅ Handle avatar upload (form-data)
-    if (req.files?.avatar?.[0]?.path) {
-      try {
-        const upload = await uploadToCloudinary(
-          req.files.avatar[0].path,
-          "users/avatar"
-        );
-        avatarUrl = upload.secure_url;
+    res.status(201).json({ success: true, data: user });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
-        // Delete old avatar if exists
-        if (user.avatar) {
-          const oldPublicId = user.avatar.split("/").pop().split(".")[0];
-          await destroyFromCloudinary(`users/avatar/${oldPublicId}`);
-        }
+/* FULL UPDATE (PUT) */
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
 
-        updatedFields.avatar = avatarUrl;
-      } catch (err) {
-        console.warn("⚠️ Avatar upload failed:", err.message);
-      }
-    }
+    const { name, email, password, role } = req.body;
 
-    // ✅ Hash password if provided
     if (password?.trim()) {
-      updatedFields.password = await bcrypt.hash(password, 10);
+      user.password = await bcrypt.hash(password, 10);
     }
 
-    // ✅ Update name/email if provided
-    if (name && name !== user.name) updatedFields.name = name;
-    if (email && email !== user.email) updatedFields.email = email;
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (role !== undefined) user.role = role;
 
-    // ✅ If nothing changed
-    if (Object.keys(updatedFields).length === 0) {
-      return res.status(400).json({ message: "No changes detected." });
+    if (req.files?.avatar?.[0]) {
+      if (user.avatar) {
+        const id = user.avatar.split("/").pop().split(".")[0];
+        await destroyFromCloudinary(`users/avatar/${id}`);
+      }
+
+      const up = await uploadToCloudinary(
+        req.files.avatar[0].path,
+        "users/avatar"
+      );
+      user.avatar = up.secure_url;
     }
 
-    // ✅ Update user
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $set: updatedFields },
+    await user.save();
+    res.json({ success: true, data: user });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/* PARTIAL UPDATE (PATCH) */
+export const partiallyUpdateUser = async (req, res) => {
+  try {
+    const allowed = ["name", "email", "role", "avatar"];
+
+    const updates = {};
+    Object.entries(req.body).forEach(([k, v]) => {
+      if (allowed.includes(k)) updates[k] = v;
+    });
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
       { new: true, runValidators: true, select: "-password" }
     );
 
-    return res.status(200).json({
-      message: "✅ User profile updated successfully.",
-      data: updatedUser,
-    });
-  } catch (error) {
-    console.error("❌ Error updating user profile:", error);
-    return res.status(500).json({
-      message: "Internal Server Error while updating profile.",
-      error: error.message,
-    });
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    res.json({ success: true, data: user });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/* DELETE USER */
+export const deleteUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    if (user.avatar) {
+      const id = user.avatar.split("/").pop().split(".")[0];
+      await destroyFromCloudinary(`users/avatar/${id}`);
+    }
+
+    await user.deleteOne();
+    res.json({ success: true, message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
