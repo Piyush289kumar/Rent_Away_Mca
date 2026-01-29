@@ -23,6 +23,7 @@ import {
   BookCopy,
   ChartPie,
   Table2,
+  Users,
 } from "lucide-react";
 import { NavMain } from "~/components/nav-main";
 import { NavProjects } from "~/components/nav-projects";
@@ -143,6 +144,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/admin/app-configuration",
         icon: Settings2,
         isActive: isActive("/admin/blog"),
+      },
+      {
+        title: "Users",
+        url: "/admin/users",
+        icon: Users,
+        isActive: isActive("/admin/users"),
       },
     ],
 

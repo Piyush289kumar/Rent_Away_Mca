@@ -55,6 +55,12 @@ import { contactApi } from "~/features/contact/data/contactApi";
 import propertyReducer from "~/features/property/data/propertySlice";
 import { propertyApi } from "~/features/property/data/propertyApi";
 
+
+// ⚙️  Users Feature
+import usersReducer from "~/features/users/data/usersSlice";
+import { usersApi } from "~/features/users/data/usersApi";
+
+
 export const store = configureStore({
   reducer: {
     // ✅ App Configuration state + API
@@ -108,6 +114,10 @@ export const store = configureStore({
     // ✅ Property state + API
     property: propertyReducer,
     [propertyApi.reducerPath]: propertyApi.reducer,
+
+    // ✅ Users state + API
+    users: userReducer,
+    [usersApi.reducerPath]: usersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -123,7 +133,8 @@ export const store = configureStore({
       // userCertificateApi.middleware,
       contactApi.middleware,
       // Rent Away
-      propertyApi.middleware
+      propertyApi.middleware,
+      usersApi.middleware
     ),
 });
 

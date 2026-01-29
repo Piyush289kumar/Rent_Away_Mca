@@ -24,6 +24,7 @@ export default [
             // ...createCrudRoutes("user-certificate"),
             ...createCrudRoutes("gallery"),
             ...createCrudRoutes("contact"),
+            ...createCrudRoutes("users"),
 
             // Rent Away
             ...createCrudRoutes("property"),
