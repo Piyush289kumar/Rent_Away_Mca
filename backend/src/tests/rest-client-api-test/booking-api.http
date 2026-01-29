@@ -1,0 +1,66 @@
+// src/tests/rest-client-api-test/booking-api.http
+
+@baseUrl = http://localhost:8000/api/v1
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2IzYTMzODg0ZmI4NzUyYjZmNzMyYSIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY5Njg2MDA2LCJleHAiOjE3NzAyOTA4MDZ9.WcI0e00wjQe6TuiNB5OiO8Luh3EEVIciu68wb8VuKwc
+@bookingId = 697b44bf72eeeb0b3cbb88e7
+@propertyId = 695140c941f5bc3279f9b537
+
+### ==========================================
+### 🟢 CUSTOMER — Create Booking
+### ==========================================
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "checkIn": "2026-02-20",
+  "checkOut": "2026-03-14",
+  "totalGuests": 2,
+  "note": "Near window if possible"
+}
+
+###
+
+### ==========================================
+### 🟢 CUSTOMER — Get My Bookings
+### ==========================================
+GET {{baseUrl}}/bookings/me
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### ==========================================
+### 🟢 CUSTOMER — Cancel Booking
+### ==========================================
+DELETE {{baseUrl}}/bookings/{{bookingId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### ==========================================
+### 🔒 ADMIN — Get All Bookings
+### ==========================================
+GET {{baseUrl}}/bookings/admin/all
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### ==========================================
+### 🔒 ADMIN — Get Booking By ID
+### ==========================================
+GET {{baseUrl}}/bookings/admin/{{bookingId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### ==========================================
+### 🔒 ADMIN — Delete Booking
+### ==========================================
+DELETE {{baseUrl}}/bookings/admin/{{bookingId}}
+Authorization: Bearer {{token}}
+Accept: application/json

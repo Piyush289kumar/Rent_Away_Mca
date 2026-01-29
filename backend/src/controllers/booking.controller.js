@@ -4,25 +4,21 @@ import Booking from "../models/booking/booking.model.js";
 import Property from "../models/property/property.model.js";
 
 /* ===========================
-   🔍 CHECK AVAILABILITY
+   🔍 AVAILABILITY CHECK
 =========================== */
 const isDateAvailable = async (propertyId, checkIn, checkOut) => {
   const conflict = await Booking.findOne({
     property: propertyId,
     status: { $in: ["pending", "confirmed"] },
-    $or: [
-      {
-        checkIn: { $lt: checkOut },
-        checkOut: { $gt: checkIn },
-      },
-    ],
+    checkIn: { $lt: checkOut },
+    checkOut: { $gt: checkIn },
   });
 
   return !conflict;
 };
 
 /* ===========================
-   🟢 CREATE BOOKING
+   🟢 CUSTOMER — CREATE BOOKING
 =========================== */
 export const createBooking = async (req, res) => {
   try {
@@ -30,42 +26,29 @@ export const createBooking = async (req, res) => {
 
     const property = await Property.findById(propertyId);
     if (!property || !property.isActive || !property.isPublished) {
-      return res.status(404).json({
-        success: false,
-        message: "Property not available",
-      });
+      return res.status(404).json({ message: "Property not available" });
     }
 
     if (totalGuests > property.guests) {
-      return res.status(400).json({
-        success: false,
-        message: "Guest capacity exceeded",
-      });
+      return res.status(400).json({ message: "Guest capacity exceeded" });
     }
 
     const inDate = new Date(checkIn);
     const outDate = new Date(checkOut);
 
     if (outDate <= inDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid date range",
-      });
+      return res.status(400).json({ message: "Invalid date range" });
     }
 
-    /* 🔒 Conflict Check */
-    const available = await isDateAvailable(property._id, inDate, outDate);
-
+    const available = await isDateAvailable(propertyId, inDate, outDate);
     if (!available) {
-      return res.status(409).json({
-        success: false,
-        message: "Dates are already booked",
-      });
+      return res.status(409).json({ message: "Dates already booked" });
     }
 
-    const nights = (outDate - inDate) / (1000 * 60 * 60 * 24);
+    const nights = Math.ceil(
+      (outDate - inDate) / (1000 * 60 * 60 * 24)
+    );
 
-    /* 💰 Pricing Snapshot */
     const subtotal = nights * property.pricing.perNight;
     const total =
       subtotal +
@@ -73,7 +56,7 @@ export const createBooking = async (req, res) => {
       (property.pricing.serviceFee || 0);
 
     const booking = await Booking.create({
-      property: property._id,
+      property: propertyId,
       guest: req.user._id,
       host: property.host,
       checkIn: inDate,
@@ -87,75 +70,121 @@ export const createBooking = async (req, res) => {
         subtotal,
         total,
       },
-      status: "pending", // change to confirmed for instant booking
       note,
+      status: "pending",
     });
 
-    res.status(201).json({
-      success: true,
-      data: booking,
-    });
+    res.status(201).json({ success: true, data: booking });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 /* ===========================
-   🔒 HOST – APPROVE / REJECT
+   🟢 CUSTOMER — MY BOOKINGS
+=========================== */
+export const getMyBookings = async (req, res) => {
+  const bookings = await Booking.find({ guest: req.user._id })
+    .populate("property", "title coverImage location.city")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.json({ success: true, data: bookings });
+};
+
+/* ===========================
+   🔒 HOST — BOOKINGS
+=========================== */
+export const getHostBookings = async (req, res) => {
+  const bookings = await Booking.find({ host: req.user._id })
+    .populate("property", "title")
+    .populate("guest", "name email")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.json({ success: true, data: bookings });
+};
+
+/* ===========================
+   🔒 HOST — APPROVE / REJECT
 =========================== */
 export const updateBookingStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-    const booking = await Booking.findById(req.params.id);
+  const { status } = req.body;
 
-    if (!booking)
-      return res.status(404).json({
-        success: false,
-        message: "Booking not found",
-      });
-
-    if (booking.host.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    booking.status = status;
-    await booking.save();
-
-    res.json({ success: true, data: booking });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+  if (!["confirmed", "rejected", "completed"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status" });
   }
+
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+  if (booking.host.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  booking.status = status;
+  await booking.save();
+
+  res.json({ success: true, data: booking });
 };
 
 /* ===========================
-   ❌ CANCEL BOOKING
+   ❌ CANCEL (GUEST / HOST)
 =========================== */
 export const cancelBooking = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id);
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    if (
-      booking.guest.toString() !== req.user._id.toString() &&
-      booking.host.toString() !== req.user._id.toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    booking.status = "cancelled";
-    await booking.save();
-
-    res.json({
-      success: true,
-      message: "Booking cancelled successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+  const uid = req.user._id.toString();
+  if (
+    booking.guest.toString() !== uid &&
+    booking.host.toString() !== uid
+  ) {
+    return res.status(403).json({ message: "Unauthorized" });
   }
+
+  booking.status = "cancelled";
+  await booking.save();
+
+  res.json({ success: true, message: "Booking cancelled successfully" });
+};
+
+/* ===========================
+   🔒 ADMIN — ALL BOOKINGS
+=========================== */
+export const getAllBookings = async (req, res) => {
+  const bookings = await Booking.find()
+    .populate("property", "title")
+    .populate("guest host", "name email")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.json({ success: true, data: bookings });
+};
+
+/* ===========================
+   🔒 ADMIN — BOOKING BY ID
+=========================== */
+export const getBookingById = async (req, res) => {
+  const booking = await Booking.findById(req.params.id)
+    .populate("property")
+    .populate("guest host", "name email")
+    .lean();
+
+  if (!booking)
+    return res.status(404).json({ message: "Booking not found" });
+
+  res.json({ success: true, data: booking });
+};
+
+/* ===========================
+   🔒 ADMIN — DELETE
+=========================== */
+export const deleteBooking = async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+  await booking.deleteOne();
+  res.json({ success: true, message: "Booking deleted" });
 };

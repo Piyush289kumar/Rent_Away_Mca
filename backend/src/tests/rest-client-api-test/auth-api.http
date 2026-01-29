@@ -3,8 +3,9 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "name": "Kashish Mahobiya",
-  "email": "kashishmahobiya@gmail.com",
+  "name": "admin user",
+  "email": "admin@gmail.com",
+  "role": "admin",
   "password": "admin@123"
 }
 
@@ -15,7 +16,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "kashishmahobiya@gmail.com",
+  "email": "admin@gmail.com",
   "password": "admin@123"
 }
 

@@ -6,9 +6,9 @@ import User from "../models/user.model.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, role, password } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -21,6 +21,7 @@ export const register = async (req, res) => {
     const user = await User.create({
       name,
       email,
+      role,
       password: hashedPassword,
       provider: "local",
     });
@@ -30,6 +31,7 @@ export const register = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        role: user.role,
         email: user.email,
       },
     });
@@ -63,7 +65,10 @@ export const login = async (req, res) => {
 
     // Generic error (avoid telling which field is incorrect for security)
     if (!user) {
-      console.error("Login error: Invalid email or password for email e:", email);
+      console.error(
+        "Login error: Invalid email or password for email e:",
+        email,
+      );
       return res.status(401).json({
         status: "error",
         message: "Invalid email or password.",
@@ -82,9 +87,9 @@ export const login = async (req, res) => {
 
     // Generate JWT Token
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     return res.status(200).json({
@@ -94,6 +99,7 @@ export const login = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        role: user.role,
         email: user.email,
       },
     });
