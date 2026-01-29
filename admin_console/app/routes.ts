@@ -21,9 +21,12 @@ export default [
             ...createCrudRoutes("policy"),
             ...createCrudRoutes("testimonial"),
             ...createCrudRoutes("certificate"),
-            ...createCrudRoutes("user-certificate"),
+            // ...createCrudRoutes("user-certificate"),
             ...createCrudRoutes("gallery"),
             ...createCrudRoutes("contact"),
+
+            // Rent Away
+            ...createCrudRoutes("property"),
 
             // Add other custom routes freely
             //   route("reports", "features/reports/index.tsx"),

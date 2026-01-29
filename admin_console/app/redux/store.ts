@@ -41,13 +41,19 @@ import { galleryApi } from "~/features/gallery/data/galleryApi";
 import certificateReducer from "~/features/certificate/data/certificateSlice";
 import { certificateApi } from "~/features/certificate/data/certificateApi";
 
-// ⚙️  User Certificate Feature
-import userCertificateReducer from "~/features/user-certificate/data/user-certificateSlice";
-import { userCertificateApi } from "~/features/user-certificate/data/user-certificateApi";
+// // ⚙️  User Certificate Feature
+// import userCertificateReducer from "~/features/user-certificate/data/user-certificateSlice";
+// import { userCertificateApi } from "~/features/user-certificate/data/user-certificateApi";
 
 // ⚙️  Contact Feature
 import contactReducer from "~/features/contact/data/contactSlice";
 import { contactApi } from "~/features/contact/data/contactApi";
+
+// Rent Away
+
+// ⚙️  Property Feature
+import propertyReducer from "~/features/property/data/propertySlice";
+import { propertyApi } from "~/features/property/data/propertyApi";
 
 export const store = configureStore({
   reducer: {
@@ -91,12 +97,17 @@ export const store = configureStore({
     [certificateApi.reducerPath]: certificateApi.reducer,
 
     // ✅ User Certificate state + API
-    userCertificate: userCertificateReducer,
-    [userCertificateApi.reducerPath]: userCertificateApi.reducer,
+    // userCertificate: userCertificateReducer,
+    // [userCertificateApi.reducerPath]: userCertificateApi.reducer,
 
     // ✅ Contact state + API
     contact: contactReducer,
     [contactApi.reducerPath]: contactApi.reducer,
+
+    // Rent Away
+    // ✅ Property state + API
+    property: propertyReducer,
+    [propertyApi.reducerPath]: propertyApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -109,8 +120,10 @@ export const store = configureStore({
       testimonialApi.middleware,
       galleryApi.middleware,
       certificateApi.middleware,
-      userCertificateApi.middleware,
-      contactApi.middleware
+      // userCertificateApi.middleware,
+      contactApi.middleware,
+      // Rent Away
+      propertyApi.middleware
     ),
 });
 

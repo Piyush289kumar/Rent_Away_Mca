@@ -94,7 +94,26 @@ app.use(
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(compression());
 app.use(morgan("dev"));
-app.use(hpp()); // Prevent HTTP parameter pollution
+app.use((req, res, next) => {
+  const contentType = req.headers["content-type"] || "";
+
+  // ✅ Skip HPP for multipart/form-data (REAL CHECK)
+  if (contentType.includes("multipart/form-data")) {
+    return next();
+  }
+
+  return hpp({
+    whitelist: [
+      "pricing[perNight]",
+      "pricing[cleaningFee]",
+      "pricing[serviceFee]",
+      "seo[metaTitle]",
+      "seo[metaDescription]",
+      "seo[metaKeywords]",
+      "amenities[]",
+    ],
+  })(req, res, next);
+});
 
 // ===============================================
 // ⚡ Rate Limiting

@@ -23,7 +23,7 @@ import { BlogMultiDeleteDialog } from "~/features/blog/components/blog-multi-del
 import { ContactMultiDeleteDialog } from "~/features/contact/components/contact-multi-delete-dialog";
 import { CourseMultiDeleteDialog } from "~/features/course/components/blog-multi-delete-dialog";
 import { CertificateMultiDeleteDialog } from "~/features/certificate/components/certificate-multi-delete-dialog";
-import { UserCertificateMultiDeleteDialog } from "~/features/user-certificate/components/user-certificate-multi-delete-dialog";
+// import { UserCertificateMultiDeleteDialog } from "~/features/user-certificate/components/user-certificate-multi-delete-dialog";
 // You can add more in the future like:
 // import { UserMultiDeleteDialog } from "~/features/user/components/user-multi-delete-dialog";
 
@@ -86,14 +86,14 @@ export function BulkActions<TData>({
           />
         );
 
-      case "user-certificate":
-        return (
-          <UserCertificateMultiDeleteDialog
-            open={showDeleteConfirm}
-            onOpenChange={setShowDeleteConfirm}
-            table={table}
-          />
-        );
+      // case "user-certificate":
+      //   return (
+      //     <UserCertificateMultiDeleteDialog
+      //       open={showDeleteConfirm}
+      //       onOpenChange={setShowDeleteConfirm}
+      //       table={table}
+      //     />
+      //   );
 
       case "gallery":
         return (

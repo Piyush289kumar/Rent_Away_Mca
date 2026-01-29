@@ -75,12 +75,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
     ],
 
-    serviceManagementNav: [
+    propertyManagementNav: [
       {
-        title: "Services",
-        url: "/admin/service",
+        title: "Properties",
+        url: "/admin/property",
         icon: Album,
-        isActive: isActive("/admin/service"),
+        isActive: isActive("/admin/property"),
       },
     ],
 
@@ -94,18 +94,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
 
     mediaLibraryNav: [
-      {
-        title: "Certificate",
-        url: "/admin/certificate",
-        icon: Table2,
-        isActive: isActive("/admin/certificate"),
-      },
-      {
-        title: "Users Certificate",
-        url: "/admin/user-certificate",
-        icon: FileBadge,
-        isActive: isActive("/admin/user-certificate"),
-      },
       {
         title: "Gallery",
         url: "/admin/gallery",
@@ -141,22 +129,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ],
       },
 
-      {
-        title: "Course",
-        url: "/admin/course",
-        icon: BookCopy,
-        isActive: isActive("/admin/course"),
-        items: [
-          { title: "All Course", url: "/admin/course?filter=all" },
-          { title: "Active Course", url: "/admin/course?filter=active" },
-          { title: "Inactive Course", url: "/admin/course?filter=inactive" },
-          { title: "Featured Course", url: "/admin/course?filter=featured" },
-          {
-            title: "Non-Featured Course",
-            url: "/admin/course?filter=nonfeatured",
-          },
-        ],
-      },
       {
         title: "Categories",
         url: "/admin/category",
@@ -195,7 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate font-medium">
                     {import.meta.env.VITE_APP_NAME || "React App"}
                   </span>
-                  <span className="truncate text-xs">Admin Panel</span>
+                  <span className="truncate text-xs">Admin Console</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -206,14 +178,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* Main Content */}
       <SidebarContent className="scrollbar-hide">
         {/* <NavMain items={data.analyticsNav} groupName="Analytics Center" /> */}
+
+        <NavMain
+          items={data.propertyManagementNav}
+          groupName="Property Management"
+        />
+
         <NavMain
           items={data.contentManagementNav}
           groupName="Content Management"
         />
-        <NavMain
-          items={data.serviceManagementNav}
-          groupName="Service Management"
-        />
+
         <NavMain
           items={data.customerFeedbackNav}
           groupName="Customer Feedback"
