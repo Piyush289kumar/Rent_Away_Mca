@@ -55,11 +55,13 @@ import { contactApi } from "~/features/contact/data/contactApi";
 import propertyReducer from "~/features/property/data/propertySlice";
 import { propertyApi } from "~/features/property/data/propertyApi";
 
-
 // ⚙️  Users Feature
 import usersReducer from "~/features/users/data/usersSlice";
 import { usersApi } from "~/features/users/data/usersApi";
 
+// ⚙️  Users Feature
+import bookingReducer from "~/features/booking/data/bookingSlice";
+import { bookingApi } from "~/features/booking/data/bookingApi";
 
 export const store = configureStore({
   reducer: {
@@ -115,8 +117,12 @@ export const store = configureStore({
     property: propertyReducer,
     [propertyApi.reducerPath]: propertyApi.reducer,
 
+    // ✅ Booking state + API
+    booking: bookingReducer,
+    [bookingApi.reducerPath]: bookingApi.reducer,
+
     // ✅ Users state + API
-    users: userReducer,
+    users: usersReducer,
     [usersApi.reducerPath]: usersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -134,7 +140,8 @@ export const store = configureStore({
       contactApi.middleware,
       // Rent Away
       propertyApi.middleware,
-      usersApi.middleware
+      usersApi.middleware,
+      bookingApi.middleware,
     ),
 });
 

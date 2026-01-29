@@ -83,6 +83,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Album,
         isActive: isActive("/admin/property"),
       },
+         {
+        title: "Bookings",
+        url: "/admin/booking",
+        icon: Album,
+        isActive: isActive("/admin/booking"),
+      },
     ],
 
     customerFeedbackNav: [

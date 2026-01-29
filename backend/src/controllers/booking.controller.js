@@ -45,9 +45,7 @@ export const createBooking = async (req, res) => {
       return res.status(409).json({ message: "Dates already booked" });
     }
 
-    const nights = Math.ceil(
-      (outDate - inDate) / (1000 * 60 * 60 * 24)
-    );
+    const nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
 
     const subtotal = nights * property.pricing.perNight;
     const total =
@@ -137,10 +135,7 @@ export const cancelBooking = async (req, res) => {
   if (!booking) return res.status(404).json({ message: "Booking not found" });
 
   const uid = req.user._id.toString();
-  if (
-    booking.guest.toString() !== uid &&
-    booking.host.toString() !== uid
-  ) {
+  if (booking.guest.toString() !== uid && booking.host.toString() !== uid) {
     return res.status(403).json({ message: "Unauthorized" });
   }
 
@@ -153,14 +148,49 @@ export const cancelBooking = async (req, res) => {
 /* ===========================
    🔒 ADMIN — ALL BOOKINGS
 =========================== */
+/* ===========================
+   🔒 ADMIN — ALL BOOKINGS (WITH PAGINATION)
+=========================== */
 export const getAllBookings = async (req, res) => {
-  const bookings = await Booking.find()
-    .populate("property", "title")
-    .populate("guest host", "name email")
-    .sort({ createdAt: -1 })
-    .lean();
+  try {
+    const { page = 1, limit = 10, search = "", status } = req.query;
 
-  res.json({ success: true, data: bookings });
+    const query = {};
+
+    /* Filter by status */
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    /* Search by note (optional) */
+    if (search) {
+      query.note = { $regex: search, $options: "i" };
+    }
+
+    const total = await Booking.countDocuments(query);
+
+    const bookings = await Booking.find(query)
+      .populate("property", "title coverImage")
+      .populate("guest host", "name email")
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      data: bookings,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 /* ===========================
@@ -172,8 +202,7 @@ export const getBookingById = async (req, res) => {
     .populate("guest host", "name email")
     .lean();
 
-  if (!booking)
-    return res.status(404).json({ message: "Booking not found" });
+  if (!booking) return res.status(404).json({ message: "Booking not found" });
 
   res.json({ success: true, data: booking });
 };
