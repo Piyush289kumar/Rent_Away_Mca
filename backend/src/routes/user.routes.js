@@ -7,12 +7,26 @@ import {
   updateUser,
   partiallyUpdateUser,
   deleteUserById,
+  getMe,
 } from "../controllers/user.controller.js";
 
 import { ensureAuth } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 
 const router = Router();
+
+
+/* ================================
+   🔒 AUTH USER
+================================ */
+
+/**
+ * Get logged-in user
+ * GET /users/me
+ */
+router.get("/me", ensureAuth, getMe);
+
+
 
 /* ================================
    🟢 PUBLIC ROUTES

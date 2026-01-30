@@ -203,3 +203,39 @@ export const deleteUserById = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
+
+/* ===========================
+   🔒 GET LOGGED-IN USER
+   GET /users/me
+=========================== */
+export const getMe = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Remove sensitive fields if needed
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.json({
+      success: true,
+      data: safeUser,
+    });
+  } catch (error) {
+    console.error("GET /users/me error:", error);
+    res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
