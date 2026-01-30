@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { properties } from "@/data/properties";
 import Header from "@/components/Header";
 import {
   Star,
@@ -16,7 +15,7 @@ import {
   Check,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { usePropertyById } from "@/api/property.api";
 
 const amenityIcons: Record<string, React.ElementType> = {
   Wifi: Wifi,
@@ -29,13 +28,17 @@ const amenityIcons: Record<string, React.ElementType> = {
   "Lake view": TreePine,
 };
 
-const PropertyDetail = () => {
+export default function PropertyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const property = properties.find((p) => p.id === Number(id));
+  const { data, isLoading, error } = usePropertyById(id);
   const [isLiked, setIsLiked] = useState(false);
 
-  if (!property) {
+  if (isLoading) {
+    return <div className="p-10 text-center">Loading property...</div>;
+  }
+
+  if (error || !data?.data) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -49,243 +52,161 @@ const PropertyDetail = () => {
     );
   }
 
-  const handleReserve = () => {
-    navigate(`/booking/${property.id}`);
-  };
+  const property = data.data;
+
+  const images = property.gallery?.length
+    ? property.gallery
+    : property.coverImage
+      ? [property.coverImage]
+      : [];
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
-        {/* Title Section */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">
-            {property.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-foreground" />
-              <span className="font-semibold">{property.rating}</span>
-              <span className="text-muted-foreground">
-                · {property.host.reviews} reviews
-              </span>
-            </div>
-            {property.isSuperhost && (
-              <span className="badge-superhost">Superhost</span>
-            )}
-            <span className="text-muted-foreground underline cursor-pointer">
-              {property.location}
+      <main className="container mx-auto px-4 py-6 space-y-10">
+        {/* TITLE */}
+        <div>
+          <h1 className="text-3xl font-bold">{property.title}</h1>
+          <div className="flex items-center gap-4 text-sm mt-2">
+            <Star className="h-4 w-4 fill-foreground" />
+            <span>{property.rating?.avg || 0}</span>
+            <span className="text-muted-foreground">
+              · {property.propertyType}
             </span>
-            <div className="flex gap-4 ml-auto">
-              <button className="flex items-center gap-2 hover:bg-secondary p-2 rounded-lg transition-colors">
-                <Share className="h-4 w-4" />
-                <span className="underline font-medium">Share</span>
+
+            <div className="ml-auto flex gap-4">
+              <button className="flex items-center gap-2">
+                <Share className="h-4 w-4" /> Share
               </button>
               <button
                 onClick={() => setIsLiked(!isLiked)}
-                className="flex items-center gap-2 hover:bg-secondary p-2 rounded-lg transition-colors"
+                className="flex items-center gap-2"
               >
                 <Heart
                   className={`h-4 w-4 ${
                     isLiked ? "fill-primary text-primary" : ""
                   }`}
                 />
-                <span className="underline font-medium">Save</span>
+                Save
               </button>
             </div>
           </div>
         </div>
 
-        {/* Image Gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl overflow-hidden mb-8">
-          <div className="aspect-square md:aspect-auto md:row-span-2">
+        {/* IMAGES */}
+        <div className="rounded-md">
+          {images[0] && (
             <img
-              src={property.images[0]}
-              alt={property.title}
-              className="w-full h-full object-cover hover:opacity-95 transition-opacity cursor-pointer"
+              src={images[0]}
+              className="w-full h-full object-cover md:row-span-2 rounded-lg"
             />
-          </div>
-          <div className="hidden md:grid grid-cols-2 gap-2">
-            {property.images.slice(1, 5).map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`${property.title} ${idx + 2}`}
-                className="w-full h-full object-cover aspect-square hover:opacity-95 transition-opacity cursor-pointer"
-              />
-            ))}
-          </div>
+          )}
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left Column */}
+        {/* CONTENT */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* LEFT */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Host Info */}
-            <div className="flex items-center justify-between pb-8 border-b border-border">
-              <div>
-                <h2 className="text-xl font-semibold mb-1">
-                  Entire place hosted by {property.host.name}
-                </h2>
-                <p className="text-muted-foreground">
-                  {property.maxGuests} guests · {property.bedrooms} bedroom
-                  {property.bedrooms > 1 ? "s" : ""} · {property.bathrooms} bath
-                  {property.bathrooms > 1 ? "s" : ""}
-                </p>
-              </div>
-              <img
-                src={property.host.image}
-                alt={property.host.name}
-                className="w-14 h-14 rounded-full object-cover"
-              />
-            </div>
-
-            {/* Features */}
-            <div className="space-y-6 pb-8 border-b border-border">
-              <div className="flex gap-6">
-                <div className="flex-shrink-0">
-                  <Check className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Self check-in</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Check yourself in with the lockbox.
-                  </p>
-                </div>
-              </div>
-              {property.isSuperhost && (
-                <div className="flex gap-6">
-                  <div className="flex-shrink-0">
-                    <Star className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">
-                      {property.host.name} is a Superhost
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Superhosts are experienced, highly rated hosts.
-                    </p>
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-6">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Free cancellation for 48 hours</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Get a full refund if you change your mind.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="pb-8 border-b border-border">
-              <p className="text-foreground leading-relaxed">
-                {property.description}
+            <div className="border-b pb-6">
+              <h2 className="text-xl font-semibold">
+                Hosted by {property.host?.name}
+              </h2>
+              <p className="text-muted-foreground">
+                {property.guests} guests · {property.bedrooms} bedrooms ·{" "}
+                {property.bathrooms} bathrooms
               </p>
-            </div>
 
-            {/* Amenities */}
-            <div className="pb-8 border-b border-border">
-              <h2 className="text-xl font-semibold mb-6">What this place offers</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {property.amenities.map((amenity) => {
-                  const Icon = amenityIcons[amenity] || Check;
-                  return (
-                    <div key={amenity} className="flex items-center gap-4">
-                      <Icon className="h-6 w-6 text-muted-foreground" />
-                      <span>{amenity}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+              {/* HOUSE RULES */}
+              {property.houseRules && (
+                <div className="flex flex-wrap gap-3 mt-3 text-sm">
+                  <span
+                    className={`px-3 py-1 rounded-full border ${
+                      property.houseRules.smoking
+                        ? "bg-red-100 text-red-700 border-red-200"
+                        : "bg-green-100 text-green-700 border-green-200"
+                    }`}
+                  >
+                    🚭 Smoking{" "}
+                    {property.houseRules.smoking ? "Allowed" : "Not allowed"}
+                  </span>
 
-          {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-28 bg-card rounded-xl border border-border shadow-card-hover p-6">
-              <div className="flex items-baseline justify-between mb-6">
-                <div>
-                  <span className="text-2xl font-bold">${property.price}</span>
-                  <span className="text-muted-foreground"> night</span>
-                </div>
-                <div className="flex items-center gap-1 text-sm">
-                  <Star className="h-4 w-4 fill-foreground" />
-                  <span className="font-semibold">{property.rating}</span>
-                  <span className="text-muted-foreground">
-                    · {property.host.reviews} reviews
+                  <span
+                    className={`px-3 py-1 rounded-full border ${
+                      property.houseRules.pets
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : "bg-red-100 text-red-700 border-red-200"
+                    }`}
+                  >
+                    🐶 Pets{" "}
+                    {property.houseRules.pets ? "Allowed" : "Not allowed"}
+                  </span>
+
+                  <span
+                    className={`px-3 py-1 rounded-full border ${
+                      property.houseRules.parties
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : "bg-red-100 text-red-700 border-red-200"
+                    }`}
+                  >
+                    🎉 Parties{" "}
+                    {property.houseRules.parties ? "Allowed" : "Not allowed"}
                   </span>
                 </div>
+              )}
+            </div>
+
+            {/* DESCRIPTION */}
+            <div
+              className="prose"
+              dangerouslySetInnerHTML={{ __html: property.description }}
+            />
+
+            {/* AMENITIES */}
+            {property.amenities?.length > 0 && (
+              <div>
+                <h3 className="text-xl font-semibold mb-4">
+                  What this place offers
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {property.amenities.map((amenity: string) => {
+                    const Icon = amenityIcons[amenity] || Check;
+                    return (
+                      <div key={amenity} className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-muted-foreground" />
+                        <span>{amenity}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT (BOOKING CARD) */}
+          <div className="lg:col-span-1 space-y-8">
+            <div className="border rounded-xl p-6 space-y-4">
+              <div className="flex justify-between">
+                <span className="text-2xl font-bold">
+                  ₹{property.pricing?.perNight}
+                </span>
+                <span className="text-muted-foreground">per night</span>
               </div>
 
-              {/* Date Picker */}
-              <div className="border border-border rounded-lg overflow-hidden mb-4">
-                <div className="grid grid-cols-2">
-                  <div className="p-3 border-r border-b border-border">
-                    <p className="text-xs font-semibold uppercase">Check-in</p>
-                    <p className="text-muted-foreground">Add date</p>
-                  </div>
-                  <div className="p-3 border-b border-border">
-                    <p className="text-xs font-semibold uppercase">Checkout</p>
-                    <p className="text-muted-foreground">Add date</p>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="text-xs font-semibold uppercase">Guests</p>
-                  <p className="text-muted-foreground">1 guest</p>
-                </div>
-              </div>
-
-              <button onClick={handleReserve} className="btn-coral w-full mb-4">
+              <button
+                onClick={() => navigate(`/booking/${property._id}`)}
+                className="btn-coral w-full"
+              >
                 Reserve
               </button>
 
-              <p className="text-center text-sm text-muted-foreground mb-4">
-                You won't be charged yet
+              <p className="text-xs text-center text-muted-foreground">
+                You won’t be charged yet
               </p>
-
-              {/* Price Breakdown */}
-              <div className="space-y-3 pt-4 border-t border-border">
-                <div className="flex justify-between">
-                  <span className="underline">${property.price} x 5 nights</span>
-                  <span>${property.price * 5}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="underline">Cleaning fee</span>
-                  <span>$75</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="underline">Service fee</span>
-                  <span>$120</span>
-                </div>
-                <div className="flex justify-between pt-4 border-t border-border font-semibold">
-                  <span>Total before taxes</span>
-                  <span>${property.price * 5 + 75 + 120}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </main>
     </div>
   );
-};
-
-export default PropertyDetail;
+}

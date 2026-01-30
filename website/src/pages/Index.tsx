@@ -23,12 +23,6 @@ const Index = () => {
             <Link to="/properties" className="btn-coral">
               Explore stays
             </Link>
-            <Link
-              to="/register"
-              className="font-semibold py-3 px-6 rounded-lg border border-foreground hover:bg-secondary transition-colors"
-            >
-              Become a Host
-            </Link>
           </div>
         </div>
 

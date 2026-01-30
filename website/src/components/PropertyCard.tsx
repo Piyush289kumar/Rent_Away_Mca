@@ -3,22 +3,22 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 
 interface PropertyCardProps {
-  id: number;
+  id: string;
   images: string[];
-  location: string;
+  title: string;
   distance: string;
-  dates: string;
+  guests: number;
   price: number;
   rating: number;
-  isSuperhost?: boolean;
+  isSuperhost?: string;
 }
 
 const PropertyCard = ({
   id,
   images,
-  location,
+  title,
   distance,
-  dates,
+  guests,
   price,
   rating,
   isSuperhost,
@@ -33,7 +33,7 @@ const PropertyCard = ({
         <div className="relative aspect-square overflow-hidden rounded-xl">
           <img
             src={images[currentImage]}
-            alt={location}
+            alt={title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
 
@@ -56,8 +56,8 @@ const PropertyCard = ({
 
           {/* Superhost Badge */}
           {isSuperhost && (
-            <div className="absolute top-3 left-3 badge-superhost">
-              Superhost
+            <div className="absolute top-3 left-3 badge-superhost bg-red-500 uppercase">
+              {isSuperhost}
             </div>
           )}
 
@@ -83,20 +83,26 @@ const PropertyCard = ({
         </div>
 
         {/* Content */}
-        <div className="p-1 pt-3">
+        <div className="p-1 pt-3 px-2">
           <div className="flex items-start justify-between">
-            <h3 className="font-semibold text-foreground">{location}</h3>
+            <h3 className="font-semibold text-foreground">{title}</h3>
             <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-foreground" />
-              <span className="text-sm">{rating}</span>
+              {/* <Star className="h-4 w-4 fill-foreground" />
+              <span className="text-sm">{rating}</span> */}
             </div>
           </div>
-          <p className="text-muted-foreground text-sm mt-0.5">{distance}</p>
-          <p className="text-muted-foreground text-sm">{dates}</p>
-          <p className="mt-2">
-            <span className="font-semibold">${price}</span>{" "}
-            <span className="text-muted-foreground">night</span>
+          <p className="text-muted-foreground text-sm badge-superhost bg-green-400 text-white uppercase">
+            Capicity : {guests}
           </p>
+          <div className="mt-5 mb-1 flex justify-between">
+            <p>
+              <span className="font-semibold">${price}</span>{" "}
+              <span className="text-muted-foreground">night</span>
+            </p>
+            <Link to="/properties" className="btn-coral px-2 py-1">
+              Book Now
+            </Link>
+          </div>
         </div>
       </div>
     </Link>

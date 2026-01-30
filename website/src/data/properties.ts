@@ -1,3 +1,5 @@
+// website/src/data/properties.ts
+
 export const properties = [
   {
     id: 1,

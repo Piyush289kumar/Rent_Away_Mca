@@ -176,7 +176,7 @@ app.use(`${routePrefix}/contact`, contatUsRoutes);
 app.use(`${routePrefix}/upload`, uploadRoutes);
 
 // Rent Away
-app.use(`${routePrefix}/property`, propertyRoutes);
+app.use(`${routePrefix}/properties`, propertyRoutes);
 app.use(`${routePrefix}/bookings`, bookingRoutes);
 app.use(`${routePrefix}/booking-extension`, bookingExtensionRoutes);
 
