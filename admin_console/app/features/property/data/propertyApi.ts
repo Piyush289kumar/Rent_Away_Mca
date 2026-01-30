@@ -1,4 +1,4 @@
-// app/routes/property/data/propertyApi.ts - (using RTK Query)
+// app/routes/properties/data/propertyApi.ts - (using RTK Query)
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getToken } from "~/utils/auth";
@@ -73,14 +73,14 @@ export const propertyApi = createApi({
       PaginationParams
     >({
       query: ({ page = 1, limit = 10, search = "" }) =>
-        `property?page=${page}&limit=${limit}&search=${encodeURIComponent(
+        `properties?page=${page}&limit=${limit}&search=${encodeURIComponent(
           search
         )}`,
       providesTags: ["Property"],
     }),
 
     getPropertyById: builder.query<{ data: Property }, string>({
-      query: (id) => `property/${id}`,
+      query: (id) => `properties/${id}`,
       providesTags: (result, error, id) => [{ type: "Property", id }],
     }),
 
@@ -97,7 +97,7 @@ export const propertyApi = createApi({
         sortOrder = "desc",
         filter = "all",
       }) =>
-        `property/admin/all?page=${page}&limit=${limit}&search=${encodeURIComponent(
+        `properties/admin/all?page=${page}&limit=${limit}&search=${encodeURIComponent(
           search
         )}&sortBy=${sortBy}&sortOrder=${sortOrder}&filter=${filter}`,
       providesTags: ["Property"],
@@ -108,7 +108,7 @@ export const propertyApi = createApi({
       FormData
     >({
       query: (formData) => ({
-        url: `property`,
+        url: `properties/admin`,
         method: "POST",
         body: formData,
       }),
@@ -120,7 +120,7 @@ export const propertyApi = createApi({
       { id: string; data: FormData }
     >({
       query: ({ id, data }) => ({
-        url: `property/admin/${id}`,
+        url: `properties/admin/${id}`,
         method: "PUT",
         body: data,
       }),
@@ -129,7 +129,7 @@ export const propertyApi = createApi({
 
     deleteProperty: builder.mutation<{ message: string }, string>({
       query: (id) => ({
-        url: `property/admin/${id}`,
+        url: `properties/admin/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Property"],

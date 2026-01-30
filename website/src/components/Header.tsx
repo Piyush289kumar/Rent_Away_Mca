@@ -1,9 +1,21 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Menu, User, Globe } from "lucide-react";
 import { useState } from "react";
 
 const Header = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+  const initialSearch = params.get("search") || "";
+
+  const [search, setSearch] = useState(initialSearch);
+
+  const handleSearch = () => {
+    if (!search.trim()) return;
+    navigate(`/properties?search=${encodeURIComponent(search)}`);
+  };
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -26,17 +38,21 @@ const Header = () => {
           </Link>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:flex items-center border border-border rounded-full shadow-elevated px-2 py-2 hover:shadow-card transition-shadow cursor-pointer">
-            <button className="px-4 font-medium text-sm border-r border-border">
-              Anywhere
-            </button>
-            <button className="px-4 font-medium text-sm border-r border-border">
-              Any week
-            </button>
-            <button className="px-4 text-sm text-muted-foreground">
-              Search
-            </button>
-            <button className="bg-primary text-primary-foreground p-2 rounded-full ml-2">
+          {/* Search Bar - Desktop */}
+          <div className="hidden md:flex items-center border border-border rounded-full shadow-elevated px-2 py-2 hover:shadow-card transition-shadow">
+            <input
+              type="text"
+              placeholder="Search destinations"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="px-4 py-2 text-sm w-48 bg-transparent focus:outline-none"
+            />
+
+            <button
+              onClick={handleSearch}
+              className="bg-primary text-primary-foreground p-2 rounded-full ml-2"
+            >
               <Search className="h-4 w-4" />
             </button>
           </div>

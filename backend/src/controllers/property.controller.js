@@ -22,20 +22,42 @@ export const getAllActiveProperties = async (req, res) => {
       search,
     } = req.query;
 
-    const match = { isActive: true, isPublished: true };
+    const match = {
+      isActive: true,
+      isPublished: true, // ⚠️ make sure DB actually has true
+    };
 
-    if (city) match["location.city"] = { $regex: city, $options: "i" };
-    if (propertyType) match.propertyType = propertyType;
-    if (guests) match.guests = { $gte: Number(guests) };
+    // City filter
+    if (city) {
+      match["location.city"] = { $regex: city, $options: "i" };
+    }
 
+    // Property type
+    if (propertyType) {
+      match.propertyType = propertyType;
+    }
+
+    // Guests
+    if (guests) {
+      match.guests = { $gte: Number(guests) };
+    }
+
+    // Price
     if (minPrice || maxPrice) {
       match["pricing.perNight"] = {};
       if (minPrice) match["pricing.perNight"].$gte = Number(minPrice);
       if (maxPrice) match["pricing.perNight"].$lte = Number(maxPrice);
     }
 
+    // 🔥 SAFE SEARCH (NO TEXT INDEX)
     if (search) {
-      match.$text = { $search: search };
+      match.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { amenities: { $regex: search, $options: "i" } },
+        { "location.city": { $regex: search, $options: "i" } },
+        { "location.country": { $regex: search, $options: "i" } },
+      ];
     }
 
     const total = await Property.countDocuments(match);
@@ -54,12 +76,15 @@ export const getAllActiveProperties = async (req, res) => {
         total,
         page: Number(page),
         limit: Number(limit),
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.max(1, Math.ceil(total / limit)), // ✅ FIX
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    console.error("getAllActiveProperties:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 

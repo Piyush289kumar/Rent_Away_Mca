@@ -28,19 +28,23 @@ interface ApiResponse {
   };
 }
 
-export const useProperties = (page = 1, limit = 10) =>
-  useQuery<ApiResponse>({
-    queryKey: ["properties", page, limit],
+export const useProperties = (
+  page = 1,
+  limit = 8,
+  search = ""
+) =>
+  useQuery({
+    queryKey: ["properties", page, limit, search],
     queryFn: async () => {
       const res = await fetch(
-        `${API_URL}/properties?page=${page}&limit=${limit}`
+        `${API_URL}/properties?page=${page}&limit=${limit}&search=${encodeURIComponent(
+          search
+        )}`
       );
       if (!res.ok) throw new Error("Failed to fetch properties");
       return res.json();
     },
-
-    // ✅ React Query v5 replacement for keepPreviousData
-    placeholderData: (prev) => prev,
+    placeholderData: (prev) => prev, // smooth pagination
   });
 
 
