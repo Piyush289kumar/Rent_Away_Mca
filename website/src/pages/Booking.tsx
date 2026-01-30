@@ -65,7 +65,7 @@ const Booking = () => {
           toast.success("Booking request sent!");
           navigate("/profile");
         },
-        onError: (err: any) => {
+        onError: (err: unknown) => {
           toast.error(err.message || "Booking failed");
         },
       }
