@@ -99,7 +99,7 @@ const PropertyCard = ({
               <span className="font-semibold">${price}</span>{" "}
               <span className="text-muted-foreground">night</span>
             </p>
-            <Link to="/properties" className="btn-coral px-2 py-1">
+            <Link to={`/property/${id}`} className="btn-coral px-2 py-1">
               Book Now
             </Link>
           </div>

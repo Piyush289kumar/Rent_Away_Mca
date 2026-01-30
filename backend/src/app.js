@@ -41,6 +41,7 @@ import uploadRoutes from "./routes/upload.routes.js";
 import propertyRoutes from "./routes/property.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import bookingExtensionRoutes from "./routes/bookingExtension.routes.js";
+import { sendEmail } from "./utils/sendEmail.js";
 
 // ===============================================
 // 🧠 Environment Config
@@ -179,6 +180,16 @@ app.use(`${routePrefix}/upload`, uploadRoutes);
 app.use(`${routePrefix}/properties`, propertyRoutes);
 app.use(`${routePrefix}/bookings`, bookingRoutes);
 app.use(`${routePrefix}/booking-extension`, bookingExtensionRoutes);
+
+app.get("/test-email", async (req, res) => {
+  await sendEmail({
+    to: "nemakumkum9@gmail.com",
+    subject: "SMTP Test",
+    html: "<h1>Email working 🎉</h1>",
+  });
+  res.send("Mail sent");
+});
+
 
 // ===============================================
 // 🩵 Health Check

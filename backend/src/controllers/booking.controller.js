@@ -2,6 +2,7 @@
 
 import Booking from "../models/booking/booking.model.js";
 import Property from "../models/property/property.model.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 /* ===========================
    🔍 AVAILABILITY CHECK
@@ -23,6 +24,7 @@ const isDateAvailable = async (propertyId, checkIn, checkOut) => {
 export const createBooking = async (req, res) => {
   try {
     const { propertyId, checkIn, checkOut, totalGuests, note } = req.body;
+    const guest = req.user;
 
     const property = await Property.findById(propertyId);
     if (!property || !property.isActive || !property.isPublished) {
@@ -70,6 +72,32 @@ export const createBooking = async (req, res) => {
       },
       note,
       status: "pending",
+    });
+
+    /* ===========================
+       📧 SEND EMAIL (GUEST)
+    =========================== */
+    await sendEmail({
+      to: guest.email,
+      subject: "Booking Confirmed 🎉",
+      html: `
+        <h2>Booking Confirmation</h2>
+        <p>Hello <b>${guest.name}</b>,</p>
+        <p>Your booking has been successfully created.</p>
+
+        <h3>🏠 Property Details</h3>
+        <p><b>${property.title}</b></p>
+
+        <h3>📅 Stay Details</h3>
+        <p>Check-in: ${new Date(checkIn).toDateString()}</p>
+        <p>Check-out: ${new Date(checkOut).toDateString()}</p>
+        <p>Guests: ${totalGuests}</p>
+
+        <p>Status: <b>Pending confirmation</b></p>
+
+        <br />
+        <p>Thank you for booking with <b>Rent Away</b>!</p>
+      `,
     });
 
     res.status(201).json({ success: true, data: booking });
