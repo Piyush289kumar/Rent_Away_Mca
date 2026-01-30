@@ -1,6 +1,6 @@
 
 # Website Ignore
-frontend/node_modules
+website/node_modules
 
 # dependencies
 frontend/node_modules
@@ -20,7 +20,7 @@ frontend/.next/
 frontend/out/
 
 # production
-frontend/build
+website/build
 
 # misc
 .DS_Store

@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+
+    --primary: 357 82% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 13%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 357 82% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 357 82% 62%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --coral: 357 82% 62%;
+    --coral-dark: 357 82% 52%;
+    --coral-light: 357 82% 95%;
+    --gold: 45 93% 58%;
+    --success: 142 76% 36%;
+    --surface-elevated: 0 0% 100%;
+    --surface-sunken: 0 0% 97%;
+    
+    /* Gradients */
+    --gradient-coral: linear-gradient(135deg, hsl(357 82% 62%) 0%, hsl(340 82% 58%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 97%) 100%);
+    
+    /* Shadows */
+    --shadow-card: 0 6px 16px hsla(0, 0%, 0%, 0.08);
+    --shadow-card-hover: 0 8px 28px hsla(0, 0%, 0%, 0.12);
+    --shadow-elevated: 0 2px 12px hsla(0, 0%, 0%, 0.08);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Nunito', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .property-card {
+    @apply bg-card rounded-xl overflow-hidden transition-all duration-300;
+    box-shadow: var(--shadow-card);
+  }
+  
+  .property-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+  
+  .btn-coral {
+    @apply bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+    background: var(--gradient-coral);
+  }
+  
+  .btn-coral:hover {
+    @apply opacity-90 scale-[1.02];
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
+  }
+  
+  .nav-link {
+    @apply text-foreground/80 hover:text-foreground transition-colors duration-200 font-medium;
+  }
+  
+  .badge-superhost {
+    @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-foreground text-background;
+  }
+}
