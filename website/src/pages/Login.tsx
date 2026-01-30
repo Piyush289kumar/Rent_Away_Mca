@@ -3,19 +3,33 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 
+import { useLogin } from "@/api/auth.api";
+
 const Login = () => {
   const navigate = useNavigate();
+  const { mutate: login, isPending } = useLogin();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  /* ===========================
+     SUBMIT
+  =========================== */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login
-    toast.success("Welcome back!");
-    navigate("/properties");
+
+    login(formData, {
+      onSuccess: (data) => {
+        toast.success(`Welcome back, ${data.user.name}!`);
+        navigate("/properties");
+      },
+      onError: (err) => {
+        toast.error(err.message || "Login failed");
+      },
+    });
   };
 
   return (
@@ -29,20 +43,22 @@ const Login = () => {
             className="h-10 w-10 text-primary"
             fill="currentColor"
           >
-            <path d="M16 1c-6.627 0-12 5.373-12 12 0 4.97 3.024 9.23 7.336 11.037L16 31l4.664-6.963C24.976 22.23 28 17.97 28 13c0-6.627-5.373-12-12-12zm0 16.5c-2.485 0-4.5-2.015-4.5-4.5s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5-2.015 4.5-4.5 4.5z" />
+            <path d="M16 1c-6.627 0-12 5.373-12 12 0 4.97 3.024 9.23 7.336 11.037L16 31l4.664-6.963C24.976 22.23 28 17.97 28 13c0-6.627-5.373-12-12-12z" />
           </svg>
           <span className="text-2xl font-bold text-primary">airbnb</span>
         </Link>
 
         {/* Card */}
-        <div className="bg-card rounded-2xl shadow-card-hover border border-border p-8 animate-fade-in">
-          <h1 className="text-2xl font-bold text-center mb-2">Welcome back</h1>
+        <div className="bg-card rounded-2xl border border-border p-8">
+          <h1 className="text-2xl font-bold text-center mb-2">
+            Welcome back
+          </h1>
           <p className="text-muted-foreground text-center mb-8">
-            Log in to continue your journey
+            Log in to continue
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+            {/* EMAIL */}
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
@@ -57,7 +73,7 @@ const Login = () => {
               />
             </div>
 
-            {/* Password */}
+            {/* PASSWORD */}
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
@@ -73,7 +89,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-4 top-1/2 -translate-y-1/2"
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5" />
@@ -83,59 +99,23 @@ const Login = () => {
               </button>
             </div>
 
-            {/* Forgot Password */}
-            <div className="flex justify-end">
-              <button
-                type="button"
-                className="text-sm text-primary font-medium hover:underline"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {/* Submit */}
-            <button type="submit" className="btn-coral w-full">
-              Log in
+            {/* SUBMIT */}
+            <button
+              type="submit"
+              disabled={isPending}
+              className="btn-coral w-full disabled:opacity-60"
+            >
+              {isPending ? "Logging in..." : "Log in"}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-card px-4 text-muted-foreground">
-                or continue with
-              </span>
-            </div>
-          </div>
-
-          {/* Social Logins */}
-          <div className="grid grid-cols-3 gap-3">
-            <button className="flex items-center justify-center p-3 border border-border rounded-lg hover:bg-secondary transition-colors">
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="h-5 w-5"
-              />
-            </button>
-            <button className="flex items-center justify-center p-3 border border-border rounded-lg hover:bg-secondary transition-colors">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-            </button>
-            <button className="flex items-center justify-center p-3 border border-border rounded-lg hover:bg-secondary transition-colors">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Sign Up Link */}
+          {/* REGISTER */}
           <p className="text-center mt-8 text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-primary font-semibold hover:underline">
+            Don’t have an account?{" "}
+            <Link
+              to="/register"
+              className="text-primary font-semibold hover:underline"
+            >
               Sign up
             </Link>
           </p>
